@@ -242,7 +242,7 @@ body.theme-dark .hero::after {
   inset: 0;
   overflow: hidden;
   z-index: 0;
-  background: url('https://images.unsplash.com/photo-1504595403659-9088ce801e29?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+  background: url('assets/hero.png') center/cover no-repeat;
 }
 
 .hero-video {
@@ -613,7 +613,7 @@ body.theme-dark .live-pill { background: rgba(255,255,255,0.06); }
 @media (max-width: 768px) {
   .hero { padding-top: 5.2rem; }
   .hero-video { display: none; }
-  .hero-media { background: url('https://images.unsplash.com/photo-1504595403659-9088ce801e29?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat; }
+  .hero-media { background: url('assets/hero.png') center/cover no-repeat; }
   .product-card { padding: 1rem; }
   .nav-shell { grid-template-columns: auto auto; grid-template-areas: "brand actions" "menu menu"; }
   .nav-actions { justify-self: end; }
