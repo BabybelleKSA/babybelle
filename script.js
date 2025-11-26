@@ -452,6 +452,50 @@
     renderCart();
   };
 
+  // Snipcart checkout integration with custom drawer cart
+  if (checkoutBtn) {
+    // Start with a disabled button until Snipcart is ready
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Preparing checkout...';
+
+    document.addEventListener('snipcart.ready', () => {
+      const snipcart = window.Snipcart;
+      if (!snipcart || !snipcart.api) {
+        checkoutBtn.textContent = 'Checkout unavailable';
+        return;
+      }
+
+      // Enable the button once Snipcart is fully ready
+      checkoutBtn.disabled = false;
+      checkoutBtn.textContent = 'Checkout';
+
+      checkoutBtn.addEventListener('click', async () => {
+        if (!cart.length) return;
+
+        await snipcart.api.cart.clear();
+
+        for (const item of cart) {
+          const meta = productCatalog[item.type]?.[item.slug];
+          if (!meta) continue;
+
+          await snipcart.api.cart.addItem({
+            id: `${item.type}-${item.slug}`,
+            name: meta.title,
+            price: meta.price,
+            quantity: item.qty,
+            description: productDescriptions[item.type],
+            url: '/',
+            customFields: [
+              { name: 'Size', value: item.size }
+            ]
+          });
+        }
+
+        snipcart.api.theme.checkout.open();
+      });
+    });
+  }
+
   // Email signup
   const emailForm = qs('#emailForm');
   const emailInput = qs('#emailInput');
@@ -483,38 +527,6 @@
   // Footer year
   const yearEl = qs('#year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
-
-  // Checkout with Snipcart (payment only; drawer UI remains custom)
-  checkoutBtn?.addEventListener('click', async () => {
-    if (!window.Snipcart || !Snipcart.api) {
-      alert("Checkout is loading. Please try again.");
-      return;
-    }
-
-    // 1. Clear Snipcart cart
-    await Snipcart.api.cart.clear();
-
-    // 2. Add each drawer-cart item into Snipcart
-    for (const item of cart) {
-      const meta = productCatalog[item.type]?.[item.slug];
-      if (!meta) continue;
-
-      await Snipcart.api.cart.addItem({
-        id: `${item.type}-${item.slug}`,
-        name: meta.title,
-        price: meta.price,
-        quantity: item.qty,
-        description: productDescriptions[item.type],
-        url: '/',
-        customFields: [
-          { name: 'Size', value: item.size }
-        ]
-      });
-    }
-
-    // 3. Open Snipcart checkout modal (payment only)
-    Snipcart.api.theme.checkout.open();
-  });
 
   // Keyboard close for cart
   document.addEventListener('keydown', (e) => {
