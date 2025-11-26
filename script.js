@@ -484,10 +484,36 @@
   const yearEl = qs('#year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  // Checkout placeholder
-  checkoutBtn?.addEventListener('click', () => {
-    checkoutBtn.textContent = 'Checkout coming soon';
-    setTimeout(() => { checkoutBtn.textContent = 'Checkout (placeholder)'; }, 1200);
+  // Checkout with Snipcart (payment only; drawer UI remains custom)
+  checkoutBtn?.addEventListener('click', async () => {
+    if (!window.Snipcart || !Snipcart.api) {
+      alert("Checkout is loading. Please try again.");
+      return;
+    }
+
+    // 1. Clear Snipcart cart
+    await Snipcart.api.cart.clear();
+
+    // 2. Add each drawer-cart item into Snipcart
+    for (const item of cart) {
+      const meta = productCatalog[item.type]?.[item.slug];
+      if (!meta) continue;
+
+      await Snipcart.api.cart.addItem({
+        id: `${item.type}-${item.slug}`,
+        name: meta.title,
+        price: meta.price,
+        quantity: item.qty,
+        description: productDescriptions[item.type],
+        url: '/',
+        customFields: [
+          { name: 'Size', value: item.size }
+        ]
+      });
+    }
+
+    // 3. Open Snipcart checkout modal (payment only)
+    Snipcart.api.theme.checkout.open();
   });
 
   // Keyboard close for cart
