@@ -227,6 +227,8 @@
       card.className = 'product-card soft-fade';
       card.dataset.slug = slug;
       card.dataset.type = typeKey;
+      const optionsString = availableSizes.map(([size]) => size).join('|');
+      const firstSize = availableSizes[0]?.[0] || '';
       card.innerHTML = `
         <div class="product-top">
           <div>
@@ -251,7 +253,19 @@
           </div>
         </div>
         <div class="buy-row">
-          <button class="btn primary buy" type="button" ${total === 0 ? 'disabled' : ''}>${total === 0 ? 'Sold out' : 'Add to cart'}</button>
+          <button
+            class="btn primary buy snipcart-add-item"
+            type="button"
+            data-item-id="${typeKey}-${slug}"
+            data-item-price="${Number(data.price).toFixed(2)}"
+            data-item-url="/"
+            data-item-description="${copy}"
+            data-item-name="${data.title}"
+            data-item-custom1-name="Size"
+            data-item-custom1-options="${optionsString}"
+            data-item-custom1-value="${firstSize}"
+            ${total === 0 ? 'disabled' : ''}
+          >${total === 0 ? 'Sold out' : 'Add to Cart'}</button>
         </div>
       `;
       grid.appendChild(card);
@@ -278,7 +292,9 @@
         const disabled = !size || avail <= 0;
         if (buyBtn) {
           buyBtn.disabled = disabled;
-          buyBtn.textContent = disabled ? 'Sold out' : 'Add to cart';
+          buyBtn.textContent = disabled ? 'Sold out' : 'Add to Cart';
+          buyBtn.dataset.itemCustom1Value = size || '';
+          buyBtn.dataset.itemQuantity = qtyInput ? String(qtyInput.value) : '1';
         }
         if (qtyInput) qtyInput.disabled = disabled;
       };
@@ -293,9 +309,11 @@
         const avail = availableQty(typeKey, slug, size);
         if (avail <= 0) { syncControls(); return; }
         const qty = Math.min(Math.max(parseInt(qtyInput?.value || '1', 10) || 1, 1), avail);
+        buyBtn.dataset.itemCustom1Value = size;
+        buyBtn.dataset.itemQuantity = String(qty);
         addToCart({ type: typeKey, slug, size, qty });
         buyBtn.textContent = 'Added!';
-        setTimeout(() => { buyBtn.textContent = 'Add to cart'; }, 900);
+        setTimeout(() => { buyBtn.textContent = 'Add to Cart'; }, 900);
       });
 
       observeFade(card);
