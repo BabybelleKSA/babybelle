@@ -53,7 +53,12 @@
   };
   let cart = loadCart();
 
-  const saveCart = () => storage.setItem(CART_KEY, JSON.stringify(cart));
+  const persistCart = () => {
+    storage.setItem(CART_KEY, JSON.stringify(cart));
+    window.cartItems = cart.map((item) => ({ ...item }));
+  };
+
+  persistCart();
 
   const nav = qs('#topNav');
   const navMenu = qs('#navMenu');
@@ -335,6 +340,11 @@
     cartCountEls.forEach((el) => { el.textContent = String(count); });
   };
 
+  const updateCheckoutButtonState = () => {
+    if (!checkoutBtn) return;
+    checkoutBtn.disabled = cart.length === 0;
+  };
+
   const openCart = () => {
     cartDrawer?.classList.add('open');
     cartOverlay?.classList.add('show');
@@ -359,7 +369,7 @@
     } else {
       cart.push({ type, slug, size, qty: safeQty });
     }
-    saveCart();
+    persistCart();
     renderAll();
     openCart();
   };
@@ -377,13 +387,13 @@
     const safe = Math.min(Math.max(nextQty, 1), maxAllowed || item.qty);
     item.qty = safe;
     if (item.qty <= 0) cart.splice(index, 1);
-    saveCart();
+    persistCart();
     renderAll();
   };
 
   const removeCartItem = (index) => {
     cart.splice(index, 1);
-    saveCart();
+    persistCart();
     renderAll();
   };
 
@@ -394,6 +404,7 @@
       cartItemsEl.innerHTML = '<p class="product-desc">Your cart is empty. Add a footie or romper to begin.</p>';
       cartTotalEl.textContent = '$0.00';
       updateCartCount();
+      updateCheckoutButtonState();
       return;
     }
 
@@ -444,6 +455,7 @@
 
     cartTotalEl.textContent = formatPrice(subtotal);
     updateCartCount();
+    updateCheckoutButtonState();
   };
 
   const renderAll = () => {
@@ -452,49 +464,55 @@
     renderCart();
   };
 
-  // Snipcart checkout integration with custom drawer cart
-  if (checkoutBtn) {
-    // Start with a disabled button until Snipcart is ready
+  // Stripe checkout integration
+  const checkoutCartSnapshot = () => {
+    if (Array.isArray(window.cartItems) && window.cartItems.length) return window.cartItems;
+    const stored = loadCart();
+    if (Array.isArray(stored) && stored.length) return stored;
+    return cart;
+  };
+
+  const sanitizedCartForCheckout = () => checkoutCartSnapshot()
+    .map((item) => ({
+      type: item?.type,
+      slug: item?.slug,
+      size: item?.size,
+      qty: Number(item?.qty) || 0
+    }))
+    .filter((item) => item.type && item.slug && item.size && item.qty > 0);
+
+  const startStripeCheckout = async () => {
+    if (!checkoutBtn) return;
+    const snapshot = sanitizedCartForCheckout();
+    if (!snapshot.length) {
+      updateCheckoutButtonState();
+      return;
+    }
+
+    const previousText = checkoutBtn.textContent;
     checkoutBtn.disabled = true;
-    checkoutBtn.textContent = 'Preparing checkout...';
+    checkoutBtn.textContent = 'Redirecting...';
 
-    document.addEventListener('snipcart.ready', () => {
-      const snipcart = window.Snipcart;
-      if (!snipcart || !snipcart.api) {
-        checkoutBtn.textContent = 'Checkout unavailable';
-        return;
-      }
-
-      // Enable the button once Snipcart is fully ready
-      checkoutBtn.disabled = false;
-      checkoutBtn.textContent = 'Checkout';
-
-      checkoutBtn.addEventListener('click', async () => {
-        if (!cart.length) return;
-
-        await snipcart.api.cart.clear();
-
-        for (const item of cart) {
-          const meta = productCatalog[item.type]?.[item.slug];
-          if (!meta) continue;
-
-          await snipcart.api.cart.addItem({
-            id: `${item.type}-${item.slug}`,
-            name: meta.title,
-            price: meta.price,
-            quantity: item.qty,
-            description: productDescriptions[item.type],
-            url: '/',
-            customFields: [
-              { name: 'Size', value: item.size }
-            ]
-          });
-        }
-
-        snipcart.api.theme.checkout.open();
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cart: snapshot })
       });
-    });
-  }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.url) {
+        throw new Error(data?.error || 'Checkout could not start.');
+      }
+      window.location = data.url;
+    } catch (err) {
+      console.error('Checkout failed', err);
+      checkoutBtn.disabled = false;
+      checkoutBtn.textContent = previousText || 'Checkout';
+      alert('Sorry, we could not start checkout. Please try again.');
+    }
+  };
+
+  checkoutBtn?.addEventListener('click', startStripeCheckout);
 
   // Email signup
   const emailForm = qs('#emailForm');

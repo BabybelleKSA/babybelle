@@ -1,0 +1,13 @@
+{
+  "name": "babybelle",
+  "version": "1.0.0",
+  "description": "Baby Belle static site with Stripe checkout",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}
