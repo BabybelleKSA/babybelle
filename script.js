@@ -473,13 +473,25 @@
   };
 
   const sanitizedCartForCheckout = () => checkoutCartSnapshot()
-    .map((item) => ({
-      type: item?.type,
-      slug: item?.slug,
-      size: item?.size,
-      qty: Number(item?.qty) || 0
-    }))
-    .filter((item) => item.type && item.slug && item.size && item.qty > 0);
+    .map((item) => {
+      const meta = productCatalog[item?.type]?.[item?.slug];
+      return {
+        type: item?.type,
+        slug: item?.slug,
+        size: item?.size,
+        qty: Number(item?.qty) || 0,
+        price: Number(meta?.price) || 0
+      };
+    })
+    .filter((item) => item.type && item.slug && item.size && item.qty > 0 && item.price > 0);
+
+  const applyBogo = (inputCart) => {
+    const sorted = inputCart.map((item) => ({ ...item })).sort((a, b) => b.price - a.price);
+    for (let i = 1; i < sorted.length; i += 2) {
+      sorted[i].price = Number(sorted[i].price) * 0.5;
+    }
+    return sorted;
+  };
 
   const startStripeCheckout = async () => {
     if (!checkoutBtn) return;
@@ -488,6 +500,8 @@
       updateCheckoutButtonState();
       return;
     }
+    const discountedCart = applyBogo(snapshot);
+    console.log('Discounted cart:', discountedCart);
 
     const previousText = checkoutBtn.textContent;
     checkoutBtn.disabled = true;
@@ -497,7 +511,7 @@
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart: snapshot })
+        body: JSON.stringify({ cart: discountedCart })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data?.url) {
