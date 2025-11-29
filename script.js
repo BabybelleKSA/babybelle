@@ -475,32 +475,46 @@
   const sanitizedCartForCheckout = () => checkoutCartSnapshot()
     .map((item) => {
       const meta = productCatalog[item?.type]?.[item?.slug];
+      const quantity = Number(item?.qty) || Number(item?.quantity) || 0;
       return {
         type: item?.type,
         slug: item?.slug,
         size: item?.size,
-        qty: Number(item?.qty) || 0,
+        qty: quantity,
+        quantity,
         price: Number(meta?.price) || 0
       };
     })
     .filter((item) => item.type && item.slug && item.size && item.qty > 0 && item.price > 0);
 
-  const applyBogo = (inputCart) => {
-    const sorted = inputCart.map((item) => ({ ...item })).sort((a, b) => b.price - a.price);
-    for (let i = 1; i < sorted.length; i += 2) {
-      sorted[i].price = Number(sorted[i].price) * 0.5;
+  function applyBogo(cart) {
+    // Expand items by quantity into a flat list
+    let expanded = [];
+    cart.forEach(item => {
+      for (let i = 0; i < item.quantity; i++) {
+        expanded.push({ ...item, quantity: 1 });
+      }
+    });
+
+    // Sort by price (high → low)
+    expanded.sort((a, b) => Number(b.price) - Number(a.price));
+
+    // Apply 50% off to every second item
+    for (let i = 1; i < expanded.length; i += 2) {
+      expanded[i].price = Number(expanded[i].price) * 0.5;
     }
-    return sorted;
-  };
+
+    return expanded;
+  }
 
   const startStripeCheckout = async () => {
     if (!checkoutBtn) return;
-    const snapshot = sanitizedCartForCheckout();
-    if (!snapshot.length) {
+    const cart = sanitizedCartForCheckout();
+    if (!cart.length) {
       updateCheckoutButtonState();
       return;
     }
-    const discountedCart = applyBogo(snapshot);
+    const discountedCart = applyBogo(cart);
     console.log('Discounted cart:', discountedCart);
 
     const previousText = checkoutBtn.textContent;
