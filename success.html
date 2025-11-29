@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baby Belle | Order Success</title>
+  <style>
+    :root {
+      --bg-start: #ffeef3;
+      --bg-end: #e8f7ec;
+      --card-bg: #ffffff;
+      --text: #2a2a2a;
+      --muted: #6b6b6b;
+      --accent: #f7b7c3;
+      --accent-strong: #f29cb1;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      --radius: 18px;
+      --font: "Segoe UI", "DM Sans", "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+      background: radial-gradient(circle at 20% 20%, rgba(247, 183, 195, 0.35), transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(200, 235, 210, 0.35), transparent 35%),
+        linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      font-family: var(--font);
+      color: var(--text);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 28px 34px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 4vw, 34px);
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .art {
+      width: 100%;
+      max-width: 260px;
+      margin: 20px auto 26px;
+      display: block;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      background: var(--accent);
+      color: #1b1b1b;
+      border: none;
+      border-radius: 999px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(247, 183, 195, 0.45);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(242, 156, 177, 0.5);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(242, 156, 177, 0.45);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" role="main">
+    <h1>Thank you for your order! 🎉</h1>
+    <p class="lede">Your Baby Belle order is confirmed. We’re getting everything ready for your little one.</p>
+
+    <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" role="img"
+      aria-label="Baby clothing illustration">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffe6ee" />
+          <stop offset="100%" stop-color="#e9f7ef" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="320" height="240" rx="22" fill="url(#bg)" />
+      <path d="M160 40c-12 12-24 16-36 8l-18 18c16 10 18 22 18 40v44c0 14 10 26 24 30l12 3 12-3c14-4 24-16 24-30v-44c0-18 2-30 18-40l-18-18c-12 8-24 4-36-8z"
+        fill="#f7b7c3" stroke="#e996ac" stroke-width="4" />
+      <path d="M138 120h44" stroke="#ffdfe8" stroke-width="6" stroke-linecap="round" />
+      <circle cx="142" cy="134" r="5" fill="#ffdfe8" />
+      <circle cx="178" cy="134" r="5" fill="#ffdfe8" />
+      <path d="M160 88c-8 0-14-6-14-14" stroke="#ffdfe8" stroke-width="6" stroke-linecap="round" />
+      <path d="M160 88c8 0 14-6 14-14" stroke="#ffdfe8" stroke-width="6" stroke-linecap="round" />
+    </svg>
+
+    <a class="btn" href="/">Return Home</a>
+    <p class="note">A receipt has been emailed to you.</p>
+  </main>
+</body>
+
+</html>
