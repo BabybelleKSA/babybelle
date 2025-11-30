@@ -10,6 +10,13 @@
     rompers: 'Our convertible bamboo rompers are lightweight, airy, and ultra-soft. Designed to grow with your little one using fold-over hands and fold-over feet. Durable, breathable, and 3x longer-lasting than traditional cotton.'
   };
 
+  const snugNote = `
+    <div class="snug-note">
+      <strong>Meant to be worn snug.</strong>
+      <p>Baby Belle onesies are intentionally snug-fit to mimic the safe, secure feeling of being swaddled in softness. They stretch naturally and move with your baby.</p>
+    </div>
+  `;
+
   const baseInventory = {
     footies: {
       blush_pink: { '0-3': 4 },
@@ -75,6 +82,9 @@
   const heroParallax = qs('[data-parallax]');
   const heroSection = qs('.hero');
   const snowCanvas = qs('#snowCanvas');
+  const reviewTrack = qs('#reviewTrack');
+  const reviewNavPrev = qs('.review-nav.prev');
+  const reviewNavNext = qs('.review-nav.next');
 
   // Theme
   const setTheme = (mode) => {
@@ -125,6 +135,53 @@
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  // Review carousel
+  let reviewTimer;
+  const reviewGap = () => {
+    if (!reviewTrack) return 0;
+    const style = getComputedStyle(reviewTrack);
+    const gap = Number.parseFloat(style.gap || style.columnGap || '0');
+    return Number.isNaN(gap) ? 0 : gap;
+  };
+
+  const scrollReviews = (dir = 1) => {
+    if (!reviewTrack) return;
+    const firstCard = reviewTrack.querySelector('.review-card');
+    const width = firstCard ? firstCard.getBoundingClientRect().width : reviewTrack.clientWidth;
+    reviewTrack.scrollBy({ left: (width + reviewGap()) * dir, behavior: 'smooth' });
+  };
+
+  const updateReviewNavState = () => {
+    if (!reviewTrack) return;
+    const max = reviewTrack.scrollWidth - reviewTrack.clientWidth;
+    const left = reviewTrack.scrollLeft;
+    const atStart = left <= 6;
+    const atEnd = left >= max - 6;
+    reviewNavPrev?.classList.toggle('disabled', atStart);
+    reviewNavNext?.classList.toggle('disabled', atEnd);
+  };
+
+  const startReviewAuto = () => {
+    if (!reviewTrack) return;
+    clearInterval(reviewTimer);
+    reviewTimer = setInterval(() => scrollReviews(1), 5200);
+  };
+
+  const stopReviewAuto = () => clearInterval(reviewTimer);
+
+  reviewNavPrev?.addEventListener('click', () => { stopReviewAuto(); scrollReviews(-1); });
+  reviewNavNext?.addEventListener('click', () => { stopReviewAuto(); scrollReviews(1); });
+  reviewTrack?.addEventListener('scroll', updateReviewNavState, { passive: true });
+  reviewTrack?.addEventListener('pointerdown', stopReviewAuto);
+  reviewTrack?.addEventListener('focusin', stopReviewAuto);
+  reviewTrack?.addEventListener('mouseenter', stopReviewAuto);
+  reviewTrack?.addEventListener('mouseleave', startReviewAuto);
+  reviewTrack?.addEventListener('wheel', stopReviewAuto, { passive: true });
+  if (reviewTrack) {
+    updateReviewNavState();
+    startReviewAuto();
+  }
 
   // Snowfall (hero only)
   let snowCtx;
@@ -247,6 +304,7 @@
           <img src="${data.image}" alt="${data.title}" loading="lazy" />
         </div>
         <p class="product-desc">${copy}</p>
+        ${snugNote}
         <div class="product-meta">
           <div class="field">
             <label for="${gridId}-${slug}-size">Size</label>
