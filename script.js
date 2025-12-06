@@ -5,9 +5,54 @@
   const qs = (sel, ctx = document) => ctx.querySelector(sel);
   const qsa = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
+  const SALE_MULTIPLIER = 0.85;
+  const SALE_LABEL = '15% Off Limited Launch Sale';
+
   const productDescriptions = {
-    footies: 'Baby Belle bamboo footies are made from ultra-soft 99% bamboo and 1% spandex. Breathable, moisture-wicking, and gentle on sensitive skin. Our convertible hand covers and grippy feet keep your little one cozy while growing with them.',
-    rompers: 'Our convertible bamboo rompers are lightweight, airy, and ultra-soft. Designed to grow with your little one using fold-over hands and fold-over feet. Durable, breathable, and 3x longer-lasting than traditional cotton.'
+    footies: {
+      plain: 'BabyBelle Premium Bamboo Onesie / Footie. Ultra-soft 99% bamboo fabric designed for breathable, temperature-regulating comfort. Perfect for sensitive skin and everyday wear. Built-in stretch grows with your little one, keeping them comfy longer than traditional cotton. Features: Cloud-soft bamboo; Temp-regulating + breathable; Stretch that extends wear-time; Hypoallergenic + eco-friendly; Durable, fade-resistant colors; Reinforced snaps. Why Parents Love It: Lasts twice as long. Feels incredible. Looks premium, wash after wash.',
+      html: `
+        <p class="desc-lede">BabyBelle Premium Bamboo Onesie / Footie</p>
+        <p>Ultra-soft 99% bamboo fabric designed for breathable, temperature-regulating comfort. Perfect for sensitive skin and everyday wear. Built-in stretch grows with your little one, keeping them comfy longer than traditional cotton.</p>
+        <p class="desc-subhead">Features:</p>
+        <ul class="desc-list">
+          <li>Cloud-soft bamboo</li>
+          <li>Temp-regulating + breathable</li>
+          <li>Stretch that extends wear-time</li>
+          <li>Hypoallergenic + eco-friendly</li>
+          <li>Durable, fade-resistant colors</li>
+          <li>Reinforced snaps</li>
+        </ul>
+        <p class="desc-subhead">Why Parents Love It:</p>
+        <ul class="desc-list">
+          <li>Lasts twice as long.</li>
+          <li>Feels incredible.</li>
+          <li>Looks premium, wash after wash.</li>
+        </ul>
+      `
+    },
+    rompers: {
+      plain: 'BabyBelle Premium Bamboo Romper (Convertible). Lightweight, breathable, and unbelievably soft. Designed to move with your baby's body while keeping them cool and cozy. Perfect for daytime play and nighttime comfort. Features: 99% premium bamboo; Moisture-wicking; Long-lasting stretch; Hypoallergenic; Fade-resistant, luxury colors; Easy-change snaps. Why Parents Love It: Perfect for warm sleepers. Ultra-soft on sensitive skin. Premium look + feel without the premium price tag.',
+      html: `
+        <p class="desc-lede">BabyBelle Premium Bamboo Romper (Convertible)</p>
+        <p>Lightweight, breathable, and unbelievably soft. Designed to move with your baby's body while keeping them cool and cozy. Perfect for daytime play and nighttime comfort.</p>
+        <p class="desc-subhead">Features:</p>
+        <ul class="desc-list">
+          <li>99% premium bamboo</li>
+          <li>Moisture-wicking</li>
+          <li>Long-lasting stretch</li>
+          <li>Hypoallergenic</li>
+          <li>Fade-resistant, luxury colors</li>
+          <li>Easy-change snaps</li>
+        </ul>
+        <p class="desc-subhead">Why Parents Love It:</p>
+        <ul class="desc-list">
+          <li>Perfect for warm sleepers.</li>
+          <li>Ultra-soft on sensitive skin.</li>
+          <li>Premium look + feel without the premium price tag.</li>
+        </ul>
+      `
+    }
   };
 
   const snugNote = `
@@ -34,20 +79,21 @@
 
   const productCatalog = {
     footies: {
-      blush_pink: { title: 'Blush Pink Footie', image: 'assets/blush_pink_footie.png', price: 23.50, type: 'Footie' },
-      lavender: { title: 'Lavender Footie', image: 'assets/lavender_footie.png', price: 23.50, type: 'Footie' },
-      pastel_pea: { title: 'Pastel Pea Footie', image: 'assets/pastel_pea_footie.png', price: 23.50, type: 'Footie' },
-      pure_white: { title: 'Pure White Footie', image: 'assets/pure_white_footie.png', price: 23.50, type: 'Footie' }
+      blush_pink: { title: 'Blush Pink Footie', image: 'assets/blush_pink_footie.png', price: 33.00, type: 'Footie' },
+      lavender: { title: 'Lavender Footie', image: 'assets/lavender_footie.png', price: 33.00, type: 'Footie' },
+      pastel_pea: { title: 'Pastel Pea Footie', image: 'assets/pastel_pea_footie.png', price: 33.00, type: 'Footie' },
+      pure_white: { title: 'Pure White Footie', image: 'assets/pure_white_footie.png', price: 33.00, type: 'Footie' }
     },
     rompers: {
-      blush_pink: { title: 'Blush Pink Romper', image: 'assets/blush_pink_romper.png', price: 23.50, type: 'Romper' },
-      ocean_blue: { title: 'Ocean Blue Romper', image: 'assets/ocean_blue_romper.png', price: 23.50, type: 'Romper' },
-      pastel_pea: { title: 'Pastel Pea Romper', image: 'assets/pastel_pea_romper.png', price: 23.50, type: 'Romper' },
-      pure_white: { title: 'Pure White Romper', image: 'assets/pure_white_romper.png', price: 23.50, type: 'Romper' }
+      blush_pink: { title: 'Blush Pink Romper', image: 'assets/blush_pink_romper.png', price: 29.00, type: 'Romper' },
+      ocean_blue: { title: 'Ocean Blue Romper', image: 'assets/ocean_blue_romper.png', price: 29.00, type: 'Romper' },
+      pastel_pea: { title: 'Pastel Pea Romper', image: 'assets/pastel_pea_romper.png', price: 29.00, type: 'Romper' },
+      pure_white: { title: 'Pure White Romper', image: 'assets/pure_white_romper.png', price: 29.00, type: 'Romper' }
     }
   };
 
   const formatPrice = (num) => `$${num.toFixed(2)}`;
+  const applySalePrice = (price) => Math.round(Number(price || 0) * SALE_MULTIPLIER * 100) / 100;
   const clone = (obj) => JSON.parse(JSON.stringify(obj));
 
   const storage = window.localStorage;
@@ -77,6 +123,7 @@
   const cartClose = qs('#cartClose');
   const cartItemsEl = qs('#cartItems');
   const cartTotalEl = qs('#cartTotal');
+  const cartOriginalEl = qs('#cartOriginal');
   const checkoutBtn = qs('#checkoutBtn');
   const darkToggle = qs('#darkToggle');
   const heroParallax = qs('[data-parallax]');
@@ -284,6 +331,8 @@
       const sizes = availableInventory[typeKey]?.[slug] || {};
       const availableSizes = Object.entries(sizes).filter(([, qty]) => qty > 0);
       const total = availableSizes.reduce((sum, [, qty]) => sum + qty, 0);
+      const basePrice = Number(data.price) || 0;
+      const salePriceValue = applySalePrice(basePrice);
 
       const card = document.createElement('article');
       card.className = 'product-card soft-fade';
@@ -296,14 +345,20 @@
           <div>
             <p class="product-type">${data.type}</p>
             <h3 class="product-name">${data.title}</h3>
-            <p class="product-price">${formatPrice(data.price)}</p>
+            <div class="price-wrap">
+              <div class="price-stack">
+                <span class="sale-price">${formatPrice(salePriceValue)}</span>
+                <span class="price-original">${formatPrice(basePrice)}</span>
+              </div>
+              <span class="sale-chip">${SALE_LABEL}</span>
+            </div>
           </div>
           <div class="stock-chip">${total > 0 ? `${total} in stock` : 'Sold out'}</div>
         </div>
         <div class="media-frame">
           <img src="${data.image}" alt="${data.title}" loading="lazy" />
         </div>
-        <p class="product-desc">${copy}</p>
+        <div class="product-desc">${copy?.html || ''}</div>
         ${snugNote}
         <div class="product-meta">
           <div class="field">
@@ -320,9 +375,9 @@
             class="btn primary buy snipcart-add-item"
             type="button"
             data-item-id="${typeKey}-${slug}"
-            data-item-price="${Number(data.price).toFixed(2)}"
+            data-item-price="${salePriceValue.toFixed(2)}"
             data-item-url="/"
-            data-item-description="${copy}"
+            data-item-description="${copy?.plain || ''}"
             data-item-name="${data.title}"
             data-item-custom1-name="Size"
             data-item-custom1-options="${optionsString}"
@@ -459,19 +514,25 @@
     if (!cartItemsEl || !cartTotalEl) return;
     cartItemsEl.innerHTML = '';
     if (!cart.length) {
-      cartItemsEl.innerHTML = '<p class="product-desc">Your cart is empty. Add a footie or romper to begin.</p>';
+      cartItemsEl.innerHTML = '<p class="product-desc">Your bag is empty. Add a premium bamboo footie or romper to begin.</p>';
       cartTotalEl.textContent = '$0.00';
+      if (cartOriginalEl) cartOriginalEl.textContent = '$0.00';
       updateCartCount();
       updateCheckoutButtonState();
       return;
     }
 
-    let subtotal = 0;
+    let baseSubtotal = 0;
+    let saleSubtotal = 0;
     cart.forEach((item, index) => {
       const meta = productCatalog[item.type]?.[item.slug];
       if (!meta) return;
-      const price = meta.price * item.qty;
-      subtotal += price;
+      const basePrice = Number(meta.price) || 0;
+      const salePriceValue = applySalePrice(basePrice);
+      const lineBase = basePrice * item.qty;
+      const lineSale = salePriceValue * item.qty;
+      baseSubtotal += lineBase;
+      saleSubtotal += lineSale;
       const base = baseQty(item.type, item.slug, item.size);
       const otherReserved = cart.reduce((sum, curr, idx) => {
         if (idx === index) return sum;
@@ -494,7 +555,11 @@
           </div>
         </div>
         <div class="cart-actions">
-          <div class="product-price">${formatPrice(price)}</div>
+          <div class="cart-pricing">
+            <span class="sale-price">${formatPrice(lineSale)}</span>
+            <span class="price-original">${formatPrice(lineBase)}</span>
+            <span class="sale-chip inline-sale">${SALE_LABEL}</span>
+          </div>
           <button class="icon-btn" type="button" aria-label="Remove item">Remove</button>
         </div>
       `;
@@ -511,7 +576,8 @@
       cartItemsEl.appendChild(row);
     });
 
-    cartTotalEl.textContent = formatPrice(subtotal);
+    cartTotalEl.textContent = formatPrice(saleSubtotal);
+    if (cartOriginalEl) cartOriginalEl.textContent = formatPrice(baseSubtotal);
     updateCartCount();
     updateCheckoutButtonState();
   };
@@ -534,36 +600,19 @@
     .map((item) => {
       const meta = productCatalog[item?.type]?.[item?.slug];
       const quantity = Number(item?.qty) || Number(item?.quantity) || 0;
+      const basePrice = Number(meta?.price) || 0;
+      const salePriceValue = applySalePrice(basePrice);
       return {
         type: item?.type,
         slug: item?.slug,
         size: item?.size,
         qty: quantity,
         quantity,
-        price: Number(meta?.price) || 0
+        price: salePriceValue,
+        basePrice
       };
     })
     .filter((item) => item.type && item.slug && item.size && item.qty > 0 && item.price > 0);
-
-  function applyBogo(cart) {
-    // Expand items by quantity into a flat list
-    let expanded = [];
-    cart.forEach(item => {
-      for (let i = 0; i < item.quantity; i++) {
-        expanded.push({ ...item, quantity: 1 });
-      }
-    });
-
-    // Sort by price (high → low)
-    expanded.sort((a, b) => Number(b.price) - Number(a.price));
-
-    // Apply 50% off to every second item
-    for (let i = 1; i < expanded.length; i += 2) {
-      expanded[i].price = Number(expanded[i].price) * 0.5;
-    }
-
-    return expanded;
-  }
 
   const startStripeCheckout = async () => {
     if (!checkoutBtn) return;
@@ -572,8 +621,6 @@
       updateCheckoutButtonState();
       return;
     }
-    const discountedCart = applyBogo(cart);
-    console.log('Discounted cart:', discountedCart);
 
     const previousText = checkoutBtn.textContent;
     checkoutBtn.disabled = true;
@@ -583,7 +630,7 @@
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart: discountedCart })
+        body: JSON.stringify({ cart, saleMultiplier: SALE_MULTIPLIER })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data?.url) {
@@ -600,7 +647,8 @@
 
   checkoutBtn?.addEventListener('click', startStripeCheckout);
 
-  // Email signup
+// Email signup
+
   const emailForm = qs('#emailForm');
   const emailInput = qs('#emailInput');
   const formMessage = qs('#formMessage');

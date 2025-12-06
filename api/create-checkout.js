@@ -2,6 +2,24 @@ const Stripe = require('stripe');
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret ? Stripe(stripeSecret) : null;
+const SALE_MULTIPLIER = 0.85;
+
+const productCatalog = {
+  footies: {
+    blush_pink: { title: 'Blush Pink Footie', color: 'Blush Pink', priceCents: 3300 },
+    lavender: { title: 'Lavender Footie', color: 'Lavender', priceCents: 3300 },
+    pastel_pea: { title: 'Pastel Pea Footie', color: 'Pastel Pea', priceCents: 3300 },
+    pure_white: { title: 'Pure White Footie', color: 'Pure White', priceCents: 3300 }
+  },
+  rompers: {
+    blush_pink: { title: 'Blush Pink Romper', color: 'Blush Pink', priceCents: 2900 },
+    ocean_blue: { title: 'Ocean Blue Romper', color: 'Ocean Blue', priceCents: 2900 },
+    pastel_pea: { title: 'Pastel Pea Romper', color: 'Pastel Pea', priceCents: 2900 },
+    pure_white: { title: 'Pure White Romper', color: 'Pure White', priceCents: 2900 }
+  }
+};
+
+const formatColor = (slug) => slug.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 const resolveOrigin = (req) => {
   if (req.headers.origin) return req.headers.origin;
@@ -16,6 +34,39 @@ const resolveOrigin = (req) => {
   return 'http://localhost:3000';
 };
 
+const normalizeCartItem = (item) => {
+  if (!item || typeof item !== 'object') throw new Error('Invalid cart item');
+  const { type, slug, size, qty } = item;
+  const product = productCatalog[type]?.[slug];
+  if (!product) throw new Error('Invalid product selection');
+  if (!size || typeof size !== 'string') throw new Error('Invalid size');
+
+  const quantity = Number(qty);
+  if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('Invalid quantity');
+
+  const unitAmount = Math.round(Number(product.priceCents) * SALE_MULTIPLIER);
+  if (!Number.isInteger(unitAmount) || unitAmount <= 0) throw new Error('Invalid price configuration');
+
+  return {
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: `${product.title} - ${formatColor(slug)} - Size ${size}`,
+          metadata: {
+            type,
+            slug,
+            size,
+            color: product.color,
+            base_price_cents: String(product.priceCents),
+            sale_multiplier: String(SALE_MULTIPLIER)
+          }
+        },
+        unit_amount: unitAmount
+      },
+    quantity
+  };
+};
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -27,38 +78,20 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const bodyString = typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {});
-    const { cart } = JSON.parse(bodyString || '{}');
-
+    const { cart } = req.body || {};
     if (!Array.isArray(cart) || cart.length === 0) {
       return res.status(400).json({ error: 'Cart is required' });
     }
 
-    const line_items = cart
-      .map((item) => ({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: item?.name || 'Baby Belle item',
-            images: item?.image ? [item.image] : []
-          },
-          unit_amount: Math.round(Number(item?.price) * 100)
-        },
-        quantity: item?.quantity || item?.qty || 1
-      }))
-      .filter((li) => li.price_data.unit_amount > 0 && li.quantity > 0);
-
-    if (!line_items.length) {
-      return res.status(400).json({ error: 'Cart is invalid or empty.' });
-    }
-
+    const lineItems = cart.map(normalizeCartItem);
     const origin = resolveOrigin(req);
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      line_items,
-      success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/`
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      success_url: `${origin}/?status=success`,
+      cancel_url: `${origin}/?status=cancelled`
     });
 
     return res.status(200).json({ url: session.url });
