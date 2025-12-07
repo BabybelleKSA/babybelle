@@ -6,8 +6,10 @@
   const qsa = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
   const productDescriptions = {
-    footies: 'Baby Belle bamboo footies are made from ultra-soft 99% bamboo and 1% spandex. Breathable, moisture-wicking, and gentle on sensitive skin. Our convertible hand covers and grippy feet keep your little one cozy while growing with them.',
-    rompers: 'Our convertible bamboo rompers are lightweight, airy, and ultra-soft. Designed to grow with your little one using fold-over hands and fold-over feet. Durable, breathable, and 3x longer-lasting than traditional cotton.'
+    footies:
+      "Our premium bamboo footies are crafted from ultra-soft 99% bamboo—breathable, temperature-regulating, and perfect for sensitive skin. Built-in stretch grows with your baby, while convertible cuffs and grippy feet keep them cozy day and night.",
+    rompers:
+      "Our premium bamboo rompers are lightweight, airy, and incredibly soft. Designed for comfortable play and sleep, with breathable fabric, gentle stretch, and an all-day fit that never overheats."
   };
 
   const snugNote = `
@@ -34,16 +36,16 @@
 
   const productCatalog = {
     footies: {
-      blush_pink: { title: 'Blush Pink Footie', image: 'assets/blush_pink_footie.png', price: 23.50, type: 'Footie' },
-      lavender: { title: 'Lavender Footie', image: 'assets/lavender_footie.png', price: 23.50, type: 'Footie' },
-      pastel_pea: { title: 'Pastel Pea Footie', image: 'assets/pastel_pea_footie.png', price: 23.50, type: 'Footie' },
-      pure_white: { title: 'Pure White Footie', image: 'assets/pure_white_footie.png', price: 23.50, type: 'Footie' }
+      blush_pink: { title: 'Blush Pink Footie', image: 'assets/blush_pink_footie.png', price: 33.00, type: 'Footie' },
+      lavender: { title: 'Lavender Footie', image: 'assets/lavender_footie.png', price: 33.00, type: 'Footie' },
+      pastel_pea: { title: 'Pastel Pea Footie', image: 'assets/pastel_pea_footie.png', price: 33.00, type: 'Footie' },
+      pure_white: { title: 'Pure White Footie', image: 'assets/pure_white_footie.png', price: 33.00, type: 'Footie' }
     },
     rompers: {
-      blush_pink: { title: 'Blush Pink Romper', image: 'assets/blush_pink_romper.png', price: 23.50, type: 'Romper' },
-      ocean_blue: { title: 'Ocean Blue Romper', image: 'assets/ocean_blue_romper.png', price: 23.50, type: 'Romper' },
-      pastel_pea: { title: 'Pastel Pea Romper', image: 'assets/pastel_pea_romper.png', price: 23.50, type: 'Romper' },
-      pure_white: { title: 'Pure White Romper', image: 'assets/pure_white_romper.png', price: 23.50, type: 'Romper' }
+      blush_pink: { title: 'Blush Pink Romper', image: 'assets/blush_pink_romper.png', price: 29.00, type: 'Romper' },
+      ocean_blue: { title: 'Ocean Blue Romper', image: 'assets/ocean_blue_romper.png', price: 29.00, type: 'Romper' },
+      pastel_pea: { title: 'Pastel Pea Romper', image: 'assets/pastel_pea_romper.png', price: 29.00, type: 'Romper' },
+      pure_white: { title: 'Pure White Romper', image: 'assets/pure_white_romper.png', price: 29.00, type: 'Romper' }
     }
   };
 
@@ -296,7 +298,8 @@
           <div>
             <p class="product-type">${data.type}</p>
             <h3 class="product-name">${data.title}</h3>
-            <p class="product-price">${formatPrice(data.price)}</p>
+            <p class="product-price">${formatPrice(data.price * 0.85)}</p>
+            <p class="sale-tag">15% Off Limited Launch Sale</p>
           </div>
           <div class="stock-chip">${total > 0 ? `${total} in stock` : 'Sold out'}</div>
         </div>
@@ -304,6 +307,7 @@
           <img src="${data.image}" alt="${data.title}" loading="lazy" />
         </div>
         <p class="product-desc">${copy}</p>
+        <p class="product-premium">Soft. Sustainable. Designed to last.</p>
         ${snugNote}
         <div class="product-meta">
           <div class="field">
@@ -320,7 +324,7 @@
             class="btn primary buy snipcart-add-item"
             type="button"
             data-item-id="${typeKey}-${slug}"
-            data-item-price="${Number(data.price).toFixed(2)}"
+            data-item-price="${Number(data.price * 0.85).toFixed(2)}"
             data-item-url="/"
             data-item-description="${copy}"
             data-item-name="${data.title}"
@@ -470,7 +474,7 @@
     cart.forEach((item, index) => {
       const meta = productCatalog[item.type]?.[item.slug];
       if (!meta) return;
-      const price = meta.price * item.qty;
+      const price = (meta.price * 0.85) * item.qty;
       subtotal += price;
       const base = baseQty(item.type, item.slug, item.size);
       const otherReserved = cart.reduce((sum, curr, idx) => {
@@ -545,26 +549,6 @@
     })
     .filter((item) => item.type && item.slug && item.size && item.qty > 0 && item.price > 0);
 
-  function applyBogo(cart) {
-    // Expand items by quantity into a flat list
-    let expanded = [];
-    cart.forEach(item => {
-      for (let i = 0; i < item.quantity; i++) {
-        expanded.push({ ...item, quantity: 1 });
-      }
-    });
-
-    // Sort by price (high → low)
-    expanded.sort((a, b) => Number(b.price) - Number(a.price));
-
-    // Apply 50% off to every second item
-    for (let i = 1; i < expanded.length; i += 2) {
-      expanded[i].price = Number(expanded[i].price) * 0.5;
-    }
-
-    return expanded;
-  }
-
   const startStripeCheckout = async () => {
     if (!checkoutBtn) return;
     const cart = sanitizedCartForCheckout();
@@ -572,7 +556,7 @@
       updateCheckoutButtonState();
       return;
     }
-    const discountedCart = applyBogo(cart);
+    const discountedCart = cart;
     console.log('Discounted cart:', discountedCart);
 
     const previousText = checkoutBtn.textContent;

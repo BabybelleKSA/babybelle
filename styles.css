@@ -798,3 +798,25 @@ body.theme-dark .review-card {
   .hero-card-meta { grid-template-columns: repeat(2, 1fr); }
   .cart-item { grid-template-columns: auto 1fr; }
 }
+
+.product-premium {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.sale-banner {
+  width: 100%;
+  background: #f4b4d3;
+  color: #3a1e2e;
+  text-align: center;
+  padding: 10px 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  font-size: 0.95rem;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
