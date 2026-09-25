@@ -1,18 +1,12 @@
-/* Baby Belle — style.css
-   Rebuilt for Spring Time Extravaganza
-*/
+/* Baby Belle — legacy storefront styles */
 :root {
-    --bg: #F4FBF4; 
-    /* spring morning glow */
+    --bg: #FFF9EA;
     
-    --peach: #FF8FAB; 
-    /* blossom pink (kept var name for markup compatibility) */
+    --peach: #F3A85B;
     
-    --tan: #9DCE73; 
-    /* lively spring green (kept var name for markup compatibility) */
+    --tan: #A8C878;
     
-    --brown: #254222; 
-    /* deep foliage green for text */
+    --brown: #34452E;
     
     --muted: #789674;
     --white: #ffffff;

@@ -82,8 +82,6 @@
   const checkoutBtn = qs('#checkoutBtn');
   const darkToggle = qs('#darkToggle');
   const heroParallax = qs('[data-parallax]');
-  const heroSection = qs('.hero');
-  const snowCanvas = qs('#snowCanvas');
   const reviewTrack = qs('#reviewTrack');
   const reviewNavPrev = qs('.review-nav.prev');
   const reviewNavNext = qs('.review-nav.next');
@@ -185,65 +183,6 @@
     startReviewAuto();
   }
 
-  // Snowfall (hero only)
-  let snowCtx;
-  let snowFlakes = [];
-  let snowActive = false;
-  let snowRaf = null;
-  let snowResizeTimer;
-
-  const createFlake = (w, h) => ({
-    x: Math.random() * w,
-    y: Math.random() * h,
-    r: 1 + Math.random() * 2.2,
-    s: 0.4 + Math.random() * 0.7,
-    drift: Math.random() * 0.6 - 0.3
-  });
-
-  const drawSnow = () => {
-    if (!snowActive || !snowCtx || !snowCanvas) return;
-    const { width: w, height: h } = snowCanvas;
-    snowCtx.clearRect(0, 0, w, h);
-    snowFlakes.forEach((f) => {
-      f.y += f.s;
-      f.x += f.drift;
-      if (f.y > h) { f.y = -4; f.x = Math.random() * w; }
-      if (f.x > w) f.x = 0;
-      if (f.x < 0) f.x = w;
-      snowCtx.beginPath();
-      snowCtx.fillStyle = 'rgba(255,255,255,0.7)';
-      snowCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-      snowCtx.fill();
-    });
-    snowRaf = requestAnimationFrame(drawSnow);
-  };
-
-  const initSnow = () => {
-    if (!snowCanvas || !heroSection) return;
-    const disable = window.matchMedia('(max-width: 768px)').matches;
-    if (snowRaf) cancelAnimationFrame(snowRaf);
-    if (disable) {
-      snowActive = false;
-      snowCanvas.classList.remove('show');
-      snowCanvas.width = 0;
-      snowCanvas.height = 0;
-      return;
-    }
-    const rect = heroSection.getBoundingClientRect();
-    snowCanvas.width = heroSection.clientWidth;
-    snowCanvas.height = rect.height;
-    snowCtx = snowCanvas.getContext('2d');
-    snowFlakes = Array.from({ length: 70 }, () => createFlake(snowCanvas.width, snowCanvas.height));
-    snowActive = true;
-    snowCanvas.classList.add('show');
-    drawSnow();
-  };
-
-  window.addEventListener('resize', () => {
-    clearTimeout(snowResizeTimer);
-    snowResizeTimer = setTimeout(initSnow, 180);
-  });
-
   // Intersection fade
   const fadeObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -298,8 +237,7 @@
           <div>
             <p class="product-type">${data.type}</p>
             <h3 class="product-name">${data.title}</h3>
-            <p class="product-price">${formatPrice(data.price * 0.85)}</p>
-            <p class="sale-tag">15% Off Limited Launch Sale</p>
+            <p class="product-price">${formatPrice(data.price)}</p>
           </div>
           <div class="stock-chip">${total > 0 ? `${total} in stock` : 'Sold out'}</div>
         </div>
@@ -324,7 +262,7 @@
             class="btn primary buy snipcart-add-item"
             type="button"
             data-item-id="${typeKey}-${slug}"
-            data-item-price="${Number(data.price * 0.85).toFixed(2)}"
+            data-item-price="${Number(data.price).toFixed(2)}"
             data-item-url="/"
             data-item-description="${copy}"
             data-item-name="${data.title}"
@@ -474,7 +412,7 @@
     cart.forEach((item, index) => {
       const meta = productCatalog[item.type]?.[item.slug];
       if (!meta) return;
-      const price = (meta.price * 0.85) * item.qty;
+      const price = meta.price * item.qty;
       subtotal += price;
       const base = baseQty(item.type, item.slug, item.size);
       const otherReserved = cart.reduce((sum, curr, idx) => {
@@ -620,8 +558,6 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeCart();
   });
-
-  window.addEventListener('load', initSnow);
 
   // Initial render
   renderAll();
