@@ -55,7 +55,6 @@
   const storage = window.localStorage;
   const CART_KEY = 'babybelle-cart';
   const THEME_KEY = 'babybelle-theme';
-  const EMAIL_KEY = 'babybelle-email';
 
   const loadCart = () => {
     try { return JSON.parse(storage.getItem(CART_KEY) || '[]'); } catch { return []; }
@@ -526,17 +525,6 @@
   const emailForm = qs('#emailForm');
   const emailInput = qs('#emailInput');
   const formMessage = qs('#formMessage');
-  const emailList = () => {
-    try { return JSON.parse(storage.getItem(EMAIL_KEY) || '[]'); } catch { return []; }
-  };
-  const saveEmail = (email) => {
-    const existing = emailList();
-    if (!existing.includes(email)) {
-      existing.push(email);
-      storage.setItem(EMAIL_KEY, JSON.stringify(existing));
-    }
-  };
-
   emailForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = (emailInput?.value || '').trim();
@@ -545,9 +533,10 @@
       if (formMessage) formMessage.textContent = 'Please enter a valid email.';
       return;
     }
-    saveEmail(email);
-    if (formMessage) formMessage.textContent = 'Thanks! You are on the list.';
-    if (emailInput) emailInput.value = '';
+    const subject = encodeURIComponent('Baby Belle email signup');
+    const body = encodeURIComponent(`Please add me to the Baby Belle email list.\n\nMy email address: ${email}`);
+    window.location.href = `mailto:info@buybabybelle.com?subject=${subject}&body=${body}`;
+    if (formMessage) formMessage.textContent = 'Your email app should open with a signup message addressed to info@buybabybelle.com. Send it to complete your signup.';
   });
 
   // Footer year
