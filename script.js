@@ -525,7 +525,60 @@
   const emailForm = qs('#emailForm');
   const emailInput = qs('#emailInput');
   const formMessage = qs('#formMessage');
-  emailForm?.addEventListener('submit', (e) => {
+  const contactDialog = qs('#contactDialog');
+  const contactOpen = qs('#contactOpen');
+  const contactClose = qs('#contactClose');
+  const contactForm = qs('#contactForm');
+  const contactFormMessage = qs('#contactFormMessage');
+
+  const sendInboxForm = async (form, subject, statusEl) => {
+    const submitButton = form.querySelector('button[type="submit"]');
+    const previousButtonText = submitButton?.textContent;
+    const formData = new FormData(form);
+    formData.set('_subject', subject);
+    if (form.id === 'emailForm') {
+      formData.set('message', `A visitor signed up to receive Baby Belle updates.\n\nEmail: ${formData.get('email')}`);
+    } else {
+      formData.set('_replyto', String(formData.get('email') || ''));
+    }
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Sending…';
+    }
+    if (statusEl) statusEl.textContent = '';
+
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/info@buybabybelle.com', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: formData
+      });
+      const responseText = await response.text();
+      let result;
+      try { result = JSON.parse(responseText); } catch { result = null; }
+      if (!response.ok || !result || result.success === 'false' || result.success === false) {
+        throw new Error(result?.message || `Email service returned ${response.status}.`);
+      }
+      if (statusEl) statusEl.textContent = 'Your message was submitted. Thanks for reaching out!';
+      form.reset();
+      return true;
+    } catch (error) {
+      console.error('Email submission failed', error);
+      if (statusEl) {
+        statusEl.textContent = error.message === 'Failed to fetch'
+          ? 'Could not reach the email service. Check your connection and try again.'
+          : (error.message || 'We couldn’t send that just now. Please try again.');
+      }
+      return false;
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = previousButtonText || (form.id === 'emailForm' ? 'Sign up' : 'Send message');
+      }
+    }
+  };
+
+  emailForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = (emailInput?.value || '').trim();
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -533,41 +586,26 @@
       if (formMessage) formMessage.textContent = 'Please enter a valid email.';
       return;
     }
-    const submitButton = emailForm.querySelector('button[type="submit"]');
-    const previousButtonText = submitButton?.textContent;
-    const formData = Object.fromEntries(new FormData(emailForm));
-    formData.message = `A visitor signed up to receive Baby Belle updates.\n\nEmail: ${email}`;
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Sending…';
-    }
+    sendInboxForm(emailForm, 'Baby Belle signup: updates requested', formMessage);
+  });
 
-    fetch('https://formsubmit.co/ajax/info@buybabybelle.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(formData)
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error('Signup message could not be sent.');
-        return response.json();
-      })
-      .then((result) => {
-        if (result.success === 'false' || result.success === false) {
-          throw new Error(result.message || 'Signup message could not be sent.');
-        }
-        if (formMessage) formMessage.textContent = 'You’re signed up for updates. Thanks!';
-        emailForm.reset();
-      })
-      .catch((error) => {
-        console.error('Signup email failed', error);
-        if (formMessage) formMessage.textContent = 'We couldn’t send that just now. Please try again.';
-      })
-      .finally(() => {
-        if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = previousButtonText || 'Sign up';
-        }
-      });
+  contactOpen?.addEventListener('click', () => contactDialog?.showModal());
+  contactClose?.addEventListener('click', () => contactDialog?.close());
+  contactDialog?.addEventListener('close', () => contactOpen?.focus());
+  contactDialog?.addEventListener('click', (event) => {
+    if (event.target === contactDialog) contactDialog.close();
+  });
+  contactForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = qs('#contactName')?.value.trim();
+    const email = qs('#contactEmail')?.value.trim();
+    const message = qs('#contactMessage')?.value.trim();
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
+    if (!name || !validEmail || !message) {
+      if (contactFormMessage) contactFormMessage.textContent = 'Enter your name, a valid email, and a message.';
+      return;
+    }
+    sendInboxForm(contactForm, 'Baby Belle website contact message', contactFormMessage);
   });
 
   // Footer year
