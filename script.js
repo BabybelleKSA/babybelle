@@ -533,10 +533,41 @@
       if (formMessage) formMessage.textContent = 'Please enter a valid email.';
       return;
     }
-    const subject = encodeURIComponent('Baby Belle email signup');
-    const body = encodeURIComponent(`Please add me to the Baby Belle email list.\n\nMy email address: ${email}`);
-    window.location.href = `mailto:info@buybabybelle.com?subject=${subject}&body=${body}`;
-    if (formMessage) formMessage.textContent = 'Your email app should open with a signup message addressed to info@buybabybelle.com. Send it to complete your signup.';
+    const submitButton = emailForm.querySelector('button[type="submit"]');
+    const previousButtonText = submitButton?.textContent;
+    const formData = Object.fromEntries(new FormData(emailForm));
+    formData.message = `A visitor signed up to receive Baby Belle updates.\n\nEmail: ${email}`;
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Sending…';
+    }
+
+    fetch('https://formsubmit.co/ajax/info@buybabybelle.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(formData)
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Signup message could not be sent.');
+        return response.json();
+      })
+      .then((result) => {
+        if (result.success === 'false' || result.success === false) {
+          throw new Error(result.message || 'Signup message could not be sent.');
+        }
+        if (formMessage) formMessage.textContent = 'You’re signed up for updates. Thanks!';
+        emailForm.reset();
+      })
+      .catch((error) => {
+        console.error('Signup email failed', error);
+        if (formMessage) formMessage.textContent = 'We couldn’t send that just now. Please try again.';
+      })
+      .finally(() => {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = previousButtonText || 'Sign up';
+        }
+      });
   });
 
   // Footer year
